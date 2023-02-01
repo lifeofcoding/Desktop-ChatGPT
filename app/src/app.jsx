@@ -10,7 +10,6 @@ const App = () => {
         console.log(response); // 'something'
         setResponse(response.choices[0].text);
       });
-      inputRef.current.value = "";
     }
   };
 
@@ -26,11 +25,18 @@ const App = () => {
 
     window.electron.onBlurListener(() => {
       setResponse(null);
+      inputRef.current.value = "";
+    });
+
+    window.addEventListener("click", function (e) {
+      if (!document.getElementById("form").contains(e.target)) {
+        window.electron.minimize();
+      }
     });
   }, []);
   return (
-    <form onSubmit={onSubmit}>
-      <div className="bg-[#00000090]  h-[200px] w-[80vw]  rounded-2xl input-box flex items-center justify-center p-5 shadow-[0_0px_111px_-13px_rgba(0,0,0,0.9)]">
+    <form onSubmit={onSubmit} id="form">
+      <div className="bg-[#00000095]  min-h-[200px] w-[70vw] mt-6  rounded-2xl input-box flex items-center justify-center p-5 shadow-[0_0px_100px_-13px_rgba(0,0,0,0.99)]">
         <div className="bg-slate-800 inner-input-box flex w-full flex-col p-5 items-center justify-center border-2 rounded-sm border-black">
           <div className="w-full">
             <input

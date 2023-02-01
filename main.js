@@ -10,11 +10,7 @@ const {
 const path = require("path");
 const OpenAI = require("openai-api");
 
-// Load your key from an environment variable or secret management service
-// (do not include your key directly in your code)
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-
-console.log("OPENAI_API_KEY", OPENAI_API_KEY);
 
 const openai = new OpenAI(OPENAI_API_KEY);
 
@@ -27,19 +23,6 @@ const isDevelopment =
   process.env.NODE_ENV === "development" || !process.env.NODE_ENV;
 
 ipcMain.handle("submitToChatGPT", async (event, text) => {
-  // const gptResponse = await openai.complete({
-  //   engine: "text-davinci-001",
-  //   prompt: text,
-  //   maxTokens: 15,
-  //   temperature: 0.4,
-  //   topP: 1,
-  //   presencePenalty: 0,
-  //   frequencyPenalty: 0,
-  //   bestOf: 1,
-  //   n: 1,
-  //   stream: false,
-  //   stop: ["\n", "testing"],
-  // });
   const gptResponse = await openai.complete({
     engine: "text-davinci-001",
     prompt: text,
@@ -53,10 +36,14 @@ ipcMain.handle("submitToChatGPT", async (event, text) => {
   return gptResponse.data;
 });
 
+ipcMain.handle("minimize", async (event) => {
+  BrowserWindow.getFocusedWindow().minimize();
+});
+
 const createWindow = () => {
   const win = new BrowserWindow({
     width: 800,
-    height: 600,
+    height: 400,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
     },
@@ -140,7 +127,7 @@ const registerKeyboardShortcuts = (win) => {
   console.log(globalShortcut.isRegistered("CommandOrControl+X"));
 };
 
-const addTrayMenu = () => {
+const addTrayMenu = (win) => {
   const tray = new Tray(path.join(__dirname, "resources/icon.png"));
   const menu = Menu.buildFromTemplate([
     {
@@ -166,7 +153,7 @@ app.whenReady().then(() => {
 
   registerKeyboardShortcuts(win);
 
-  addTrayMenu();
+  addTrayMenu(win);
 
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();

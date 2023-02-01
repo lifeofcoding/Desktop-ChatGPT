@@ -14,4 +14,7 @@ contextBridge.exposeInMainWorld("electron", {
     // ipcRenderer.on("submitToChatGPT", (event, customData) => cb(customData));
     ipcRenderer.invoke("submitToChatGPT", text).then((data) => cb(data));
   },
+  minimize: () => {
+    ipcRenderer.invoke("minimize");
+  },
 });
