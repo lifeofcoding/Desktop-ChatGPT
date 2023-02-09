@@ -183,8 +183,8 @@
     "webpack-merge": "^5.8.0"
   },
   "build": {
-    "productName": "ElectronReact",
-    "appId": "org.erb.ElectronReact",
+    "productName": "Desktop ChatGPT",
+    "appId": "org.erb.DesktopChatGPT",
     "asar": true,
     "asarUnpack": "**\\*.{node,dll}",
     "files": [
@@ -242,12 +242,9 @@
     ],
     "publish": {
       "provider": "github",
-      "owner": "electron-react-boilerplate",
-      "repo": "electron-react-boilerplate"
+      "owner": "lifeofcoding",
+      "repo": "desktop-chatgpt"
     }
-  },
-  "collective": {
-    "url": "https://opencollective.com/electron-react-boilerplate-594"
   },
   "devEngines": {
     "node": ">=14.x",
