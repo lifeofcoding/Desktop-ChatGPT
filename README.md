@@ -8,3 +8,5 @@ The app will start minimized to your system tray, you can right click and use th
 use hot keys (Command or Ctrl + G) to toggle the search window.
 
 ![Desktop App](./screenshot.png)
+
+Project bootstrapped using [Electron React Boilerplate](https://github.com/electron-react-boilerplate/electron-react-boilerplate)

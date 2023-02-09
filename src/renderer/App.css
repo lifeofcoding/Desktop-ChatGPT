@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body {
+  height: 100%;
+  @apply rounded-sm  h-full w-full flex items-center justify-center;
+}
+
+@layer components {
+  .input-box {
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-app-region: drag;
+  }
+
+  .inner-input-box {
+    -webkit-app-region: no-drag;
+  }
+}
