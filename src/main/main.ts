@@ -20,18 +20,12 @@ import {
 } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
-import { config } from 'dotenv';
-import OpenAI from 'openai-api';
+import { CreateChatCompletionRequest } from 'openai';
+import { machineId } from 'node-machine-id';
+import { openai, createEmbeddings } from '../lib/openai';
+import pineconeDB from '../lib/pinecone';
 // import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
-
-config();
-
-const { OPENAI_API_KEY } = process.env;
-
-console.log('OPENAI_API_KEY', OPENAI_API_KEY);
-
-const openai = new OpenAI(OPENAI_API_KEY || '');
 
 const application = {
   isQuiting: false,
@@ -48,18 +42,63 @@ class AppUpdater {
 
 let mainWindow: BrowserWindow | null = null;
 
+const localHistory: string[] = [];
+
+const getMachineId = async () => {
+  const id = await machineId();
+  return id;
+};
+
 ipcMain.handle('submitToChatGPT', async (event, text: string) => {
-  const gptResponse = await openai.complete({
-    engine: 'text-davinci-003',
-    prompt: text,
-    temperature: 0.4,
-    maxTokens: 64,
-    topP: 1,
-    frequencyPenalty: 0,
-    presencePenalty: 0,
-  });
-  console.log('gptResponse.data', gptResponse.data);
-  return gptResponse.data;
+  const user = await getMachineId();
+  localHistory.push(text);
+  const messages: CreateChatCompletionRequest['messages'] = [
+    { role: 'system', content: 'You are a helpful assistant.' },
+  ];
+  try {
+    const historyEmbeddings = await createEmbeddings(
+      // get last 4 items in local history
+      localHistory.slice(Math.max(localHistory.length - 4, 0)).join('\n\n')
+    );
+
+    const queries = await pineconeDB.queryVector(
+      historyEmbeddings.embedding,
+      user
+    );
+
+    queries.matches?.forEach((query) => {
+      const metadata = query.metadata || {};
+      if ('content' in metadata) {
+        messages.push({
+          role: 'assistant',
+          content: metadata.content as string,
+        });
+      }
+    });
+
+    messages.push({ role: 'user', content: text });
+
+    const completion = await openai.createChatCompletion({
+      model: 'gpt-3.5-turbo',
+      messages,
+    });
+
+    if (completion.data.choices[0].message) {
+      const responseEmbeddings = await createEmbeddings(
+        completion.data.choices[0].message.content
+      );
+      await pineconeDB.insertVector(
+        responseEmbeddings.embedding,
+        completion.data.choices[0].message.content,
+        user
+      );
+      return completion.data.choices[0].message.content;
+    }
+    return 'Unable to get a response from ChatGPT. Please try again.';
+  } catch (e) {
+    console.error(e);
+    return 'Unable to get a response from ChatGPT. Please try again.';
+  }
 });
 
 ipcMain.handle('minimize', async () => {

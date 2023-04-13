@@ -1,5 +1,4 @@
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
-import { Completion } from 'openai-api';
 
 export type Channels = 'ipc-example';
 
@@ -27,16 +26,15 @@ const electronHandler = {
     onBlurListener: (cb: () => void) => {
       ipcRenderer.on('blur', cb);
     },
-    submitToChatGPT: async (
-      text: string,
-      cb: (data: Completion['data']) => void
-    ) => {
+    submitToChatGPT: async (text: string, cb: (data: string) => void) => {
       // Deliberately strip event as it includes `sender` (note: Not sure about that, I partly pasted it from somewhere)
       // Note: The first argument is always event, but you can have as many arguments as you like, one is enough for me.
       // ipcRenderer.on("submitToChatGPT", (event, customData) => cb(customData));
       const returnData = await ipcRenderer
         .invoke('submitToChatGPT', text)
         .catch((err) => console.warn(err));
+
+      debugger;
 
       cb(returnData);
     },

@@ -37,7 +37,7 @@ const App = () => {
         inputRef.current.value,
         (res) => {
           setIsSearching(false);
-          setResponse(res.choices[0].text);
+          setResponse(res);
         }
       );
     }
