@@ -93,7 +93,7 @@ const App = () => {
           <div className="w-full relative">
             <input
               type="text"
-              className="rounded-sm bg-slate-600 w-full p-3 hover:bg-slate-500 outline-none border-none"
+              className="rounded-sm bg-slate-600 w-full p-3 hover:bg-slate-500 outline-none border-none text-white"
               ref={inputRef}
               id="searchInput"
               onFocus={onFocus}
