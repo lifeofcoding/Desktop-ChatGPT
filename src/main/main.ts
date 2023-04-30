@@ -36,6 +36,18 @@ const application = {
   isVisible: false,
 };
 
+if (process.env.NODE_ENV === 'production') {
+  const sourceMapSupport = require('source-map-support');
+  sourceMapSupport.install();
+}
+
+const isDebug =
+  process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true';
+
+if (isDebug) {
+  require('electron-debug')();
+}
+
 class AppUpdater {
   constructor() {
     log.transports.file.level = 'info';
@@ -46,7 +58,7 @@ class AppUpdater {
 
 let mainWindow: BrowserWindow | null = null;
 
-const localHistory: string[] = [];
+const localHistory: CreateChatCompletionRequest['messages'] = [];
 
 const getMachineId = async () => {
   const id = await machineId();
@@ -55,14 +67,27 @@ const getMachineId = async () => {
 
 ipcMain.handle('submitToChatGPT', async (e, text: string) => {
   const user = await getMachineId();
-  localHistory.push(text);
+
+  // remove all but last 4 items in local history
+  if (localHistory.length > 6) {
+    localHistory.splice(0, 4);
+  }
+
+  localHistory.push({ role: 'user', content: text });
+
   const messages: CreateChatCompletionRequest['messages'] = [
-    { role: 'system', content: 'You are a helpful assistant.' },
+    {
+      role: 'system',
+      content:
+        'You are a helpful assistant. Be sure to answer is short explanations.',
+    },
   ];
   try {
     const historyEmbeddings = await createEmbeddings(
-      // get last 4 items in local history
-      localHistory.slice(Math.max(localHistory.length - 4, 0)).join('\n\n')
+      localHistory
+        .filter((h) => h.role === 'user')
+        .map((h) => h.content)
+        .join('\n\n')
     );
 
     const queries = await pineconeDB.queryVector(
@@ -83,11 +108,13 @@ ipcMain.handle('submitToChatGPT', async (e, text: string) => {
     });
 
     // append local history
-    localHistory.slice(Math.max(localHistory.length - 3, 0)).forEach((item) => {
-      messages.push({ role: 'user', content: item });
+    localHistory.slice(Math.max(localHistory.length - 4, 0)).forEach((item) => {
+      messages.push(item);
     });
 
-    console.log('messages: ', messages);
+    if (isDebug) {
+      console.log('messages: ', messages);
+    }
 
     const completion = await openai.createChatCompletion(
       {
@@ -139,6 +166,7 @@ ipcMain.handle('submitToChatGPT', async (e, text: string) => {
         botMessage,
         user
       );
+      localHistory.push({ role: 'assistant', content: botMessage });
     });
 
     /* Catch any errors and handel */
@@ -164,18 +192,6 @@ ipcMain.handle('submitToChatGPT', async (e, text: string) => {
 ipcMain.handle('minimize', async () => {
   BrowserWindow.getFocusedWindow()?.minimize();
 });
-
-if (process.env.NODE_ENV === 'production') {
-  const sourceMapSupport = require('source-map-support');
-  sourceMapSupport.install();
-}
-
-const isDebug =
-  process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true';
-
-if (isDebug) {
-  require('electron-debug')();
-}
 
 const RESOURCES_PATH = app.isPackaged
   ? path.join(process.resourcesPath, 'assets')
