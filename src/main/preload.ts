@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
 
-export type Channels = 'ipc-example';
+export type Channels = 'chatResponse' | 'focus' | 'blur';
 
 const electronHandler = {
   ipcRenderer: {
@@ -20,23 +20,17 @@ const electronHandler = {
       ipcRenderer.once(channel, (_event, ...args) => func(...args));
     },
     // we can also expose variables, not just functions
-    onFocusListener: (cb: () => void) => {
-      ipcRenderer.on('focus', cb);
-    },
-    onBlurListener: (cb: () => void) => {
-      ipcRenderer.on('blur', cb);
-    },
-    submitToChatGPT: async (text: string, cb: (data: string) => void) => {
+    // onFocusListener: (cb: () => void) => {
+    //   return ipcRenderer.on('focus', cb);
+    // },
+    // onBlurListener: (cb: () => void) => {
+    //   return ipcRenderer.on('blur', cb);
+    // },
+    submitToChatGPT: (question: string) => {
       // Deliberately strip event as it includes `sender` (note: Not sure about that, I partly pasted it from somewhere)
       // Note: The first argument is always event, but you can have as many arguments as you like, one is enough for me.
       // ipcRenderer.on("submitToChatGPT", (event, customData) => cb(customData));
-      const returnData = await ipcRenderer
-        .invoke('submitToChatGPT', text)
-        .catch((err) => console.warn(err));
-
-      debugger;
-
-      cb(returnData);
+      return ipcRenderer.invoke('submitToChatGPT', question);
     },
     minimize: () => {
       ipcRenderer.invoke('minimize');

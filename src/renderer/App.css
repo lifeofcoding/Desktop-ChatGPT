@@ -15,7 +15,22 @@ body {
     -webkit-app-region: drag;
   }
 
-  .inner-input-box {
+  .inner-input-box,
+  .response-box {
     -webkit-app-region: no-drag;
+  }
+
+  .fadeIn {
+    animation: fadeIn 0.2s ease-in-out forwards;
+    opacity: 0;
+  }
+
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
   }
 }

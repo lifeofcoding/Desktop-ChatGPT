@@ -18,6 +18,7 @@ import {
   Menu,
   globalShortcut,
 } from 'electron';
+import { IncomingMessage } from 'http';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import { CreateChatCompletionRequest } from 'openai';
@@ -26,6 +27,9 @@ import { openai, createEmbeddings } from '../lib/openai';
 import pineconeDB from '../lib/pinecone';
 // import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
+import env from '../lib/env';
+
+const { START_MINIMIZED } = env;
 
 const application = {
   isQuiting: false,
@@ -49,7 +53,7 @@ const getMachineId = async () => {
   return id;
 };
 
-ipcMain.handle('submitToChatGPT', async (event, text: string) => {
+ipcMain.handle('submitToChatGPT', async (e, text: string) => {
   const user = await getMachineId();
   localHistory.push(text);
   const messages: CreateChatCompletionRequest['messages'] = [
@@ -63,9 +67,11 @@ ipcMain.handle('submitToChatGPT', async (event, text: string) => {
 
     const queries = await pineconeDB.queryVector(
       historyEmbeddings.embedding,
-      user
+      user,
+      3
     );
 
+    // append assistant messages from memory relavent to query
     queries.matches?.forEach((query) => {
       const metadata = query.metadata || {};
       if ('content' in metadata) {
@@ -76,28 +82,82 @@ ipcMain.handle('submitToChatGPT', async (event, text: string) => {
       }
     });
 
-    messages.push({ role: 'user', content: text });
-
-    const completion = await openai.createChatCompletion({
-      model: 'gpt-3.5-turbo',
-      messages,
+    // append local history
+    localHistory.slice(Math.max(localHistory.length - 3, 0)).forEach((item) => {
+      messages.push({ role: 'user', content: item });
     });
 
-    if (completion.data.choices[0].message) {
-      const responseEmbeddings = await createEmbeddings(
-        completion.data.choices[0].message.content
-      );
+    console.log('messages: ', messages);
+
+    const completion = await openai.createChatCompletion(
+      {
+        model: 'gpt-3.5-turbo',
+        messages,
+        max_tokens: 150,
+        temperature: 0.9,
+        stream: true,
+      },
+      { responseType: 'stream' }
+    );
+
+    /* Found by https://github.com/openai/openai-node/issues/18 */
+    const stream = completion.data as unknown as IncomingMessage;
+
+    let botMessage = '';
+    stream.on('data', (chunk: Buffer) => {
+      // Messages in the event stream are separated by a pair of newline characters.
+      const payloads = chunk.toString().split('\n\n');
+      // eslint-disable-next-line no-restricted-syntax
+      for (const payload of payloads) {
+        if (payload.includes('[DONE]')) return;
+        if (payload.startsWith('data:')) {
+          const data = payload.replaceAll(/(\n)?^data:\s*/g, ''); // in case there's multiline data event
+          try {
+            const delta = JSON.parse(data.trim());
+            console.log(delta.choices[0].delta?.content);
+
+            if (delta.choices[0].delta?.content) {
+              mainWindow?.webContents.send(
+                'chatResponse',
+                delta.choices[0].delta?.content
+              );
+              botMessage += delta.choices[0].delta?.content;
+            }
+          } catch (error) {
+            console.log(`Error with JSON.parse and ${payload}.\n${error}`);
+          }
+        }
+      }
+    });
+
+    /* On Stream end store message for history */
+    stream.on('end', async () => {
+      console.log('Stream done', botMessage);
+      const responseEmbeddings = await createEmbeddings(botMessage);
       await pineconeDB.insertVector(
         responseEmbeddings.embedding,
-        completion.data.choices[0].message.content,
+        botMessage,
         user
       );
-      return completion.data.choices[0].message.content;
-    }
-    return 'Unable to get a response from ChatGPT. Please try again.';
-  } catch (e) {
-    console.error(e);
-    return 'Unable to get a response from ChatGPT. Please try again.';
+    });
+
+    /* Catch any errors and handel */
+    stream.on('error', (err: Error) => {
+      console.error(err);
+      mainWindow?.webContents.send(
+        'chatResponse',
+        "I'm sorry, I'm having trouble understanding you right now."
+      );
+    });
+
+    return true;
+  } catch (err) {
+    console.error(err);
+    mainWindow?.webContents.send(
+      'chatResponse',
+      "I'm sorry, I'm having trouble understanding you right now."
+    );
+    return false;
   }
 });
 
@@ -233,8 +293,8 @@ const createWindow = async () => {
     if (!mainWindow) {
       throw new Error('"mainWindow" is not defined');
     }
-    if (process.env.START_MINIMIZED) {
-      // mainWindow.minimize();
+    if (START_MINIMIZED) {
+      mainWindow.minimize();
     } else {
       mainWindow.show();
     }

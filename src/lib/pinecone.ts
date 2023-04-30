@@ -1,10 +1,8 @@
 import { PineconeClient } from '@pinecone-database/pinecone';
-import { config } from 'dotenv';
 import crypto from 'crypto';
+import env from './env';
 
-config();
-
-const { PINECONE_ENVIRONMENT, PINECONE_APIKEY } = process.env;
+const { PINECONE_ENVIRONMENT, PINECONE_APIKEY, PINECONE_INDEX } = env;
 
 class PineconeDB {
   private pinecone = new PineconeClient();
@@ -33,7 +31,7 @@ class PineconeDB {
 
   public async insertVector(vector: number[], content: string, user: string) {
     await this.initialize();
-    const index = this.pinecone.Index('chatgpt-desktop');
+    const index = this.pinecone.Index(PINECONE_INDEX);
 
     const upsertRequest = {
       vectors: [
@@ -54,13 +52,13 @@ class PineconeDB {
     return upsertResponse;
   }
 
-  public async queryVector(vector: number[], user: string) {
+  public async queryVector(vector: number[], user: string, topK = 5) {
     await this.initialize();
-    const index = this.pinecone.Index('chatgpt-desktop');
+    const index = this.pinecone.Index(PINECONE_INDEX);
 
     const queryRequest = {
       vector,
-      topK: 5,
+      topK,
       includeValues: true,
       includeMetadata: true,
       filter: {

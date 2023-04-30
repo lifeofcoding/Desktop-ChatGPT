@@ -4,8 +4,12 @@
 
 import webpack from 'webpack';
 import TsconfigPathsPlugins from 'tsconfig-paths-webpack-plugin';
+import { config } from 'dotenv';
+import path from 'path';
 import webpackPaths from './webpack.paths';
 import { dependencies as externals } from '../../release/app/package.json';
+
+config({ path: path.join(__dirname, '../../.env') });
 
 const configuration: webpack.Configuration = {
   externals: [...Object.keys(externals || {})],
@@ -52,6 +56,10 @@ const configuration: webpack.Configuration = {
   plugins: [
     new webpack.EnvironmentPlugin({
       NODE_ENV: 'production',
+      PINECONE_ENVIRONMENT: process.env.PINECONE_ENVIRONMENT,
+      PINECONE_APIKEY: process.env.PINECONE_APIKEY,
+      PINECONE_INDEX: process.env.PINECONE_INDEX,
+      OPENAI_API_KEY: process.env.OPENAI_API_KEY,
     }),
   ],
 };
