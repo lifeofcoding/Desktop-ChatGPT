@@ -58,10 +58,12 @@ const App = () => {
         setSources(data);
         if (windowRef.current) {
           // smooth scroll to bottom
-          windowRef.current.scrollTo({
-            top: windowRef.current.scrollHeight,
-            behavior: 'smooth',
-          });
+          setTimeout(() => {
+            windowRef.current?.scrollTo({
+              top: windowRef.current.scrollHeight,
+              behavior: 'smooth',
+            });
+          }, 500);
         }
       }
     );
