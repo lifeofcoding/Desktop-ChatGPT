@@ -85,13 +85,23 @@ ipcMain.handle('submitToChatGPT', async (e, text: string) => {
     },
   ];
   try {
-    const sources = await getSources(text);
-    const historyEmbeddings = await createEmbeddings(
-      localHistory
-        .filter((h) => h.role === 'user')
-        .map((h) => h.content)
-        .join('\n\n')
-    );
+    // const sources = await getSources(text);
+    // const historyEmbeddings = await createEmbeddings(
+    //   localHistory
+    //     .filter((h) => h.role === 'user')
+    //     .map((h) => h.content)
+    //     .join('\n\n')
+    // );
+
+    const [sources, historyEmbeddings] = await Promise.all([
+      getSources(text),
+      createEmbeddings(
+        localHistory
+          .filter((h) => h.role === 'user')
+          .map((h) => h.content)
+          .join('\n\n')
+      ),
+    ]);
 
     const queries = await pineconeDB.queryVector(
       historyEmbeddings.embedding,

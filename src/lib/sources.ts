@@ -63,16 +63,26 @@ const getSources = async (query: string, sourceCount = 4) => {
   // SCRAPE TEXT FROM LINKS
   const sources = (await Promise.all(
     finalLinks.map(async (link) => {
-      const sourceResponse = await fetch(link);
-      const sourceHtml = await sourceResponse.text();
-      const dom = new JSDOM(sourceHtml);
-      const doc = dom.window.document;
-      const parsed = new Readability(doc).parse();
+      const controller = new AbortController();
+      const id = setTimeout(() => controller.abort(), 1000);
 
-      if (parsed) {
-        const sourceText = cleanSourceText(parsed.textContent);
+      try {
+        const sourceResponse = await fetch(link, { signal: controller.signal });
+        clearTimeout(id);
+        const sourceHtml = await sourceResponse.text();
+        const dom = new JSDOM(sourceHtml);
+        const doc = dom.window.document;
+        const parsed = new Readability(doc).parse();
 
-        return { url: link, text: sourceText };
+        if (parsed) {
+          const sourceText = cleanSourceText(parsed.textContent);
+
+          return { url: link, text: sourceText };
+        }
+
+        return undefined;
+      } catch (e) {
+        return undefined;
       }
     })
   )) as Source[];
