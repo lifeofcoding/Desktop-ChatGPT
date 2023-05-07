@@ -44,21 +44,25 @@ const getSources = async (query: string, sourceCount = 4) => {
   });
 
   const filteredLinks = links.filter((link, idx) => {
-    const domain = new URL(link).hostname;
+    try {
+      const domain = new URL(link).hostname;
 
-    if (link.includes('.pdf')) return false;
+      if (link.includes('.pdf')) return false;
 
-    const excludeList = [
-      'google',
-      'facebook',
-      'twitter',
-      'instagram',
-      'youtube',
-      'tiktok',
-    ];
-    if (excludeList.some((site) => domain.includes(site))) return false;
+      const excludeList = [
+        'google',
+        'facebook',
+        'twitter',
+        'instagram',
+        'youtube',
+        'tiktok',
+      ];
+      if (excludeList.some((site) => domain.includes(site))) return false;
 
-    return links.findIndex((l) => new URL(l).hostname === domain) === idx;
+      return links.findIndex((l) => new URL(l).hostname === domain) === idx;
+    } catch (e) {
+      return false;
+    }
   });
 
   const finalLinks = filteredLinks.slice(0, sourceCount);

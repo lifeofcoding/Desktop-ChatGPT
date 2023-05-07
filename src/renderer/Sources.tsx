@@ -6,8 +6,12 @@ const Sources = ({ sources }: { sources: string[] }) => {
   }
 
   const getHost = (url: string) => {
-    const urlObj = new URL(url);
-    return urlObj.host;
+    try {
+      const urlObj = new URL(url);
+      return urlObj.host;
+    } catch (e) {
+      return url.substring(0, 20);
+    }
   };
 
   const onClick = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {

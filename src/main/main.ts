@@ -129,7 +129,7 @@ ipcMain.handle('submitToChatGPT', async (e, text: string) => {
       messages.push(item);
     });
 
-    const prompt = endent`Use the following user query, and sources to answer the user's question:
+    const prompt = endent`Answer the following user query, use listed sources to help you answer. Cite sources as [1] or [2] or [3] after each sentence (not just the very end) to back up your answer (Ex: Correct: [1], Correct: [2][3], Incorrect: [1, 2]).:
 
       User query: ${text}
 
