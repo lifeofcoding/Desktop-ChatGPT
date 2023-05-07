@@ -85,14 +85,6 @@ ipcMain.handle('submitToChatGPT', async (e, text: string) => {
     },
   ];
   try {
-    // const sources = await getSources(text);
-    // const historyEmbeddings = await createEmbeddings(
-    //   localHistory
-    //     .filter((h) => h.role === 'user')
-    //     .map((h) => h.content)
-    //     .join('\n\n')
-    // );
-
     const [sources, historyEmbeddings] = await Promise.all([
       getSources(text),
       createEmbeddings(
@@ -102,6 +94,18 @@ ipcMain.handle('submitToChatGPT', async (e, text: string) => {
           .join('\n\n')
       ),
     ]);
+
+    if (sources.length) {
+      messages[0].content = endent`
+      You are a helpful assistant. Be sure to answer is short explanations.
+
+      Here are sources to help answer the user's question:
+
+      ${sources
+        .map((source, idx) => `Source [${idx + 1}]:\n${source.text}`)
+        .join('\n\n')}
+    `;
+    }
 
     const queries = await pineconeDB.queryVector(
       historyEmbeddings.embedding,
@@ -125,20 +129,20 @@ ipcMain.handle('submitToChatGPT', async (e, text: string) => {
       messages.push(item);
     });
 
-    const prompt = endent`Provide a 2-3 sentence answer to the following user query based on the sources listed. Be original, concise, accurate, and helpful. .
+    // const prompt = endent`Provide an answer to the following user query. Pay more attention to the context of the previous messages. If you are unable to accurately answer the question, use the sources cited below to help you answer:
 
-      User query: ${text}
+    //   User query: ${text}
 
-      ${sources
-        .map((source, idx) => `Source [${idx + 1}]:\n${source.text}`)
-        .join('\n\n')}
-      `;
+    //   ${sources
+    //     .map((source, idx) => `Source [${idx + 1}]:\n${source.text}`)
+    //     .join('\n\n')}
+    //   `;
 
     const modifiedMessages = [...messages];
-    modifiedMessages[modifiedMessages.length - 1] = {
-      role: 'user',
-      content: prompt,
-    };
+    // modifiedMessages[modifiedMessages.length - 1] = {
+    //   role: 'user',
+    //   content: prompt,
+    // };
     if (isDebug) {
       console.log('messages: ', modifiedMessages);
     }
@@ -194,6 +198,10 @@ ipcMain.handle('submitToChatGPT', async (e, text: string) => {
         user
       );
       localHistory.push({ role: 'assistant', content: botMessage });
+      mainWindow?.webContents.send(
+        'updateSources',
+        sources.map((s) => s.url)
+      );
     });
 
     /* Catch any errors and handel */

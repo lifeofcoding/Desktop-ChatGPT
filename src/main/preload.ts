@@ -1,14 +1,14 @@
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
 
-export type Channels = 'chatResponse' | 'focus' | 'blur';
+export type Channels = 'chatResponse' | 'focus' | 'blur' | 'updateSources';
 
 const electronHandler = {
   ipcRenderer: {
     sendMessage(channel: Channels, args: unknown[]) {
       ipcRenderer.send(channel, args);
     },
-    on(channel: Channels, func: (...args: unknown[]) => void) {
-      const subscription = (_event: IpcRendererEvent, ...args: unknown[]) =>
+    on<T = unknown>(channel: Channels, func: (...args: T[]) => void) {
+      const subscription = (_event: IpcRendererEvent, ...args: T[]) =>
         func(...args);
       ipcRenderer.on(channel, subscription);
 

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState, HTMLAttributes } from 'react';
 import Message from './Message';
+import Sources from './Sources';
 import './App.css';
 
 const LoadingSpinner = (props: HTMLAttributes<HTMLDivElement>) => {
@@ -14,12 +15,14 @@ const App = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const windowRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
+  const [sources, setSources] = useState<string[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [response, setResponse] = useState('');
   const onSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
     setIsSearching(true);
     setResponse('');
+    setSources([]);
     if (inputRef.current?.value) {
       await window.electron.ipcRenderer.submitToChatGPT(inputRef.current.value);
     }
@@ -49,8 +52,27 @@ const App = () => {
   }, []);
 
   useEffect(() => {
+    const subscription = window.electron.ipcRenderer.on(
+      'updateSources',
+      (data: string[]) => {
+        setSources(data);
+        if (windowRef.current) {
+          // smooth scroll to bottom
+          windowRef.current.scrollTo({
+            top: windowRef.current.scrollHeight,
+            behavior: 'smooth',
+          });
+        }
+      }
+    );
+
+    return subscription;
+  }, []);
+
+  useEffect(() => {
     const subscription = window.electron.ipcRenderer.on('blur', () => {
       setResponse('');
+      setSources([]);
       inputRef.current?.focus();
     });
 
@@ -60,6 +82,7 @@ const App = () => {
   useEffect(() => {
     const subscription = window.electron.ipcRenderer.on('focus', () => {
       setResponse('');
+      setSources([]);
       inputRef.current?.focus();
     });
 
@@ -128,6 +151,7 @@ const App = () => {
               ref={windowRef}
             >
               <Message message={response} />
+              <Sources sources={sources} />
             </div>
           </div>
         )}

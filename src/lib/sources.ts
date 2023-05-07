@@ -20,6 +20,9 @@ const cleanSourceText = (text: string) => {
 };
 
 const getSources = async (query: string, sourceCount = 4) => {
+  if (query.split(' ').length < 2) {
+    return [];
+  }
   // GET LINKS
   const response = await fetch(`https://www.google.com/search?q=${query}`);
   const html = await response.text();
