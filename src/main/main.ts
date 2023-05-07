@@ -95,17 +95,17 @@ ipcMain.handle('submitToChatGPT', async (e, text: string) => {
       ),
     ]);
 
-    if (sources.length) {
-      messages[0].content = endent`
-      You are a helpful assistant. Be sure to answer is short explanations.
+    // if (sources.length) {
+    //   messages[0].content = endent`
+    //   You are a helpful assistant. Be sure to answer is short explanations.
 
-      Use the following sources relvant to the user query to help you answer:
+    //   I have given you internet access. Here are top results for the user's question:
 
-      ${sources
-        .map((source, idx) => `Source [${idx + 1}]:\n${source.text}`)
-        .join('\n\n')}
-    `;
-    }
+    //   ${sources
+    //     .map((source, idx) => `Source [${idx + 1}]:\n${source.text}`)
+    //     .join('\n\n')}
+    // `;
+    // }
 
     const queries = await pineconeDB.queryVector(
       historyEmbeddings.embedding,
@@ -129,20 +129,23 @@ ipcMain.handle('submitToChatGPT', async (e, text: string) => {
       messages.push(item);
     });
 
-    // const prompt = endent`Provide an answer to the following user query. Pay more attention to the context of the previous messages. If you are unable to accurately answer the question, use the sources cited below to help you answer:
+    const prompt = endent`Use the following user query, and sources to answer the user's question:
 
-    //   User query: ${text}
+      User query: ${text}
 
-    //   ${sources
-    //     .map((source, idx) => `Source [${idx + 1}]:\n${source.text}`)
-    //     .join('\n\n')}
-    //   `;
+      ${sources
+        .map((source, idx) => `Source [${idx + 1}]:\n${source.text}`)
+        .join('\n\n')}
+      `;
 
     const modifiedMessages = [...messages];
-    // modifiedMessages[modifiedMessages.length - 1] = {
-    //   role: 'user',
-    //   content: prompt,
-    // };
+    modifiedMessages[modifiedMessages.length - 1] = sources.length
+      ? {
+          role: 'user',
+          content: prompt,
+        }
+      : modifiedMessages[modifiedMessages.length - 1];
+
     if (isDebug) {
       console.log('messages: ', modifiedMessages);
     }
