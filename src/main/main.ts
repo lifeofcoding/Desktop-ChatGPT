@@ -23,8 +23,10 @@ import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import { CreateChatCompletionRequest } from 'openai';
 import { machineId } from 'node-machine-id';
+import endent from 'endent';
 import { openai, createEmbeddings } from '../lib/openai';
 import pineconeDB from '../lib/pinecone';
+import getSources from '../lib/sources';
 // import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 import env from '../lib/env';
@@ -83,6 +85,7 @@ ipcMain.handle('submitToChatGPT', async (e, text: string) => {
     },
   ];
   try {
+    const sources = await getSources(text);
     const historyEmbeddings = await createEmbeddings(
       localHistory
         .filter((h) => h.role === 'user')
@@ -112,14 +115,28 @@ ipcMain.handle('submitToChatGPT', async (e, text: string) => {
       messages.push(item);
     });
 
+    const prompt = endent`Provide a 2-3 sentence answer to the following user query based on the sources listed. Be original, concise, accurate, and helpful. .
+
+      User query: ${text}
+
+      ${sources
+        .map((source, idx) => `Source [${idx + 1}]:\n${source.text}`)
+        .join('\n\n')}
+      `;
+
+    const modifiedMessages = [...messages];
+    modifiedMessages[modifiedMessages.length - 1] = {
+      role: 'user',
+      content: prompt,
+    };
     if (isDebug) {
-      console.log('messages: ', messages);
+      console.log('messages: ', modifiedMessages);
     }
 
     const completion = await openai.createChatCompletion(
       {
         model: 'gpt-3.5-turbo',
-        messages,
+        messages: modifiedMessages,
         max_tokens: 150,
         temperature: 0.9,
         stream: true,

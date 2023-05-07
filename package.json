@@ -103,10 +103,14 @@
     }
   },
   "dependencies": {
+    "@mozilla/readability": "^0.4.4",
     "@pinecone-database/pinecone": "^0.0.12",
+    "cheerio": "^1.0.0-rc.12",
     "electron-debug": "^3.2.0",
     "electron-log": "^4.4.8",
     "electron-updater": "^5.2.3",
+    "endent": "^2.1.0",
+    "jsdom": "^22.0.0",
     "node-machine-id": "^1.1.12",
     "openai": "^3.2.1",
     "react": "^18.2.0",
