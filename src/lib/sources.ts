@@ -67,7 +67,7 @@ const getSources = async (query: string, sourceCount = 4) => {
   const sources = (await Promise.all(
     finalLinks.map(async (link) => {
       const controller = new AbortController();
-      const id = setTimeout(() => controller.abort(), 1000);
+      const id = setTimeout(() => controller.abort(), 3000);
 
       try {
         const sourceResponse = await fetch(link, { signal: controller.signal });

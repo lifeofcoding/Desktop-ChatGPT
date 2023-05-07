@@ -99,7 +99,7 @@ ipcMain.handle('submitToChatGPT', async (e, text: string) => {
       messages[0].content = endent`
       You are a helpful assistant. Be sure to answer is short explanations.
 
-      Here are sources to help answer the user's question:
+      Use the following sources relvant to the user query to help you answer:
 
       ${sources
         .map((source, idx) => `Source [${idx + 1}]:\n${source.text}`)

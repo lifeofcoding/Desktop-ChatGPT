@@ -56,6 +56,11 @@ class PineconeDB {
     await this.initialize();
     const index = this.pinecone.Index(PINECONE_INDEX);
 
+    // await index.delete1({
+    //   deleteAll: true,
+    //   namespace: 'messages',
+    // });
+
     const queryRequest = {
       vector,
       topK,
