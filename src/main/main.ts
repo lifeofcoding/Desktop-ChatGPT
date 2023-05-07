@@ -218,7 +218,7 @@ const addTrayMenu = (win: BrowserWindow) => {
   const tray = new Tray(getAssetPath('icon.png'));
   const menu = Menu.buildFromTemplate([
     {
-      label: 'Show App (Ctrl+T)',
+      label: 'Show App (Ctrl+G)',
       click() {
         win.show();
       },
@@ -269,14 +269,14 @@ const registerKeyboardShortcuts = (win: BrowserWindow) => {
   //   console.log('registerDevToolsToggle failed');
   // }
 
-  const registerEscapeListener = globalShortcut.register('Esc', () => {
-    console.log('Esc is pressed 2');
-    win.minimize();
-  });
+  // const registerEscapeListener = globalShortcut.register('Esc', () => {
+  //   console.log('Esc is pressed 2');
+  //   win.minimize();
+  // });
 
-  if (!registerEscapeListener) {
-    console.log('registerEscapeListener failed');
-  }
+  // if (!registerEscapeListener) {
+  //   console.log('registerEscapeListener failed');
+  // }
 
   // Check whether a shortcut is registered.
   // console.log(globalShortcut.isRegistered('CommandOrControl+X'));
@@ -289,7 +289,7 @@ const createWindow = async () => {
 
   mainWindow = new BrowserWindow({
     width: 800,
-    height: 400,
+    height: 420,
     frame: false,
     transparent: true,
     show: false,

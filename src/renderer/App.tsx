@@ -86,21 +86,23 @@ const App = () => {
     }
   };
 
+  // prev had shadow class shadow-[0_0px_100px_-13px_rgba(0,0,0,0.99)]
   return (
     <form onSubmit={onSubmit} id="form" ref={formRef}>
-      <div className="bg-[#00000095]  min-h-[200px] w-[70vw] mt-6  rounded-2xl input-box flex items-center justify-center p-5  border border-gray-700 shadow-[0_0px_100px_-13px_rgba(0,0,0,0.99)] flex-col">
+      <div className="bg-[#00000095]  min-h-[200px] w-[70vw] mt-6  rounded-2xl input-box flex items-center justify-center p-5  border border-gray-700 flex-col">
         <div className="bg-slate-800 inner-input-box flex w-full flex-col p-5 items-center justify-center border-2 rounded-lg border-black">
           <div className="w-full relative">
             <input
-              type="text"
+              type="search"
               className="rounded-sm bg-slate-600 w-full p-3 hover:bg-slate-500 outline-none border-none text-white"
               ref={inputRef}
               id="searchInput"
               onFocus={onFocus}
             />
+
             {isSearching ? (
               <>
-                <LoadingSpinner className="absolute right-1 top-2" />
+                <LoadingSpinner className="absolute right-3 top-3" />
               </>
             ) : null}
           </div>
