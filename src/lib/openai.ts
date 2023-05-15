@@ -73,6 +73,15 @@ const agent = async (text: string): AgentResponse => {
       User query: Best chicken recipe?
       { "search": "Best chicken recipe?" }
 
+      User query: Can you elaborate?
+      { "text": "Can you elaborate?" }
+
+      User query: Can you help me with this math problem: 100 * 82726
+      { "text": "Can you help me with this math problem: 100 * 82726" }
+
+      User query: Can you summarize that for me?
+      { "text": "Can you summarize that for me?" }
+
       User query: Best resturant in Jacksonville, Florida?
       { "search": "Best resturant in Jacksonville, Florida?" }
 
