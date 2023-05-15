@@ -2,6 +2,7 @@ import * as cheerio from 'cheerio';
 import { Readability } from '@mozilla/readability';
 import { JSDOM } from 'jsdom';
 import { agent } from './openai';
+import Logger from './logger';
 
 // Inspired by https://github.com/mckaywrigley/clarity-ai/blob/5a33db140d253f47da3f07ad1475938c14dfda45/pages/api/sources.ts
 
@@ -75,32 +76,48 @@ const getSources = async (query: string, sourceCount = 4) => {
 
   const finalLinks = filteredLinks.slice(0, sourceCount);
 
+  const scapePage = async (link: string) => {
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), 1000);
+    const sourceResponse = await fetch(link, { signal: controller.signal });
+    clearTimeout(id);
+    const sourceHtml = await sourceResponse.text();
+    const dom = new JSDOM(sourceHtml);
+    const doc = dom.window.document;
+    const parsed = new Readability(doc).parse();
+
+    if (parsed) {
+      const sourceText = cleanSourceText(parsed.textContent);
+
+      return { url: link, text: sourceText };
+    }
+
+    return undefined;
+  };
+
   // SCRAPE TEXT FROM LINKS
-  const sources = (await Promise.all(
-    finalLinks.map(async (link) => {
-      const controller = new AbortController();
-      const id = setTimeout(() => controller.abort(), 3000);
+  let failed = 0;
+  const sourceFunc = async (
+    link: string
+  ): Promise<{ url: string; text: string } | undefined> => {
+    Logger.log('Fetching link', link);
+    try {
+      return await scapePage(link);
+    } catch (e) {
+      Logger.log('Failed fetching:', link);
+      if (failed > 2) return undefined;
 
-      try {
-        const sourceResponse = await fetch(link, { signal: controller.signal });
-        clearTimeout(id);
-        const sourceHtml = await sourceResponse.text();
-        const dom = new JSDOM(sourceHtml);
-        const doc = dom.window.document;
-        const parsed = new Readability(doc).parse();
+      failed += 1;
+      // Add the next link from the last index to the finalLinks array
+      const nextLink = filteredLinks[finalLinks.length - 1 + failed];
 
-        if (parsed) {
-          const sourceText = cleanSourceText(parsed.textContent);
+      if (!nextLink) return undefined;
+      Logger.log('Trying next link:', nextLink);
+      return sourceFunc(nextLink);
+    }
+  };
 
-          return { url: link, text: sourceText };
-        }
-
-        return undefined;
-      } catch (e) {
-        return undefined;
-      }
-    })
-  )) as Source[];
+  const sources = (await Promise.all(finalLinks.map(sourceFunc))) as Source[];
 
   const filteredSources = sources
     .filter((source) => source !== undefined)

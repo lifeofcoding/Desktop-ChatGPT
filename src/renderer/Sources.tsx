@@ -19,15 +19,17 @@ const Sources = ({ sources }: { sources: string[] }) => {
     window.open(e.currentTarget.href, '_blank');
   };
 
+  const uniqueSources = [...new Set(sources)];
+
   return (
     <div className="flex flex-col w-full mt-3">
       <p className="font-semibold">Sources:</p>
 
-      <div className="flex flex-row w-full overflow-y-auto gap-2 mt-2">
-        {sources.map((source, index) => (
+      <div className="flex gap-2 mt-2 flex-wrap">
+        {uniqueSources.map((source) => (
           <a
             className="flex rounded-md p-1 bg-blue-600 text-white text-sm"
-            key={index.toString()}
+            key={source}
             href={source}
             onClick={onClick}
           >

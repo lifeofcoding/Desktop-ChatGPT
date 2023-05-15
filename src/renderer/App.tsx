@@ -144,7 +144,7 @@ const App = () => {
             <button
               type="button"
               onClick={copyText}
-              className="bg-slate-200 absolute right-1 top-4 hover:bg-slate-400 active:bg-slate-700 active:text-white hidden group-hover:flex rounded text-sm p-2 border border-slate-500"
+              className="bg-slate-400/70 z-10 absolute right-5 bottom-2 hover:bg-slate-400 active:bg-slate-700 active:text-white hidden group-hover:flex rounded text-sm p-2 border border-slate-500"
             >
               Copy
             </button>

@@ -24,6 +24,7 @@ import log from 'electron-log';
 import { CreateChatCompletionRequest } from 'openai';
 import { machineId } from 'node-machine-id';
 import endent from 'endent';
+import Logger from '../lib/logger';
 import { openai, createEmbeddings } from '../lib/openai';
 import pineconeDB from '../lib/pinecone';
 import getSources from '../lib/sources';
@@ -175,7 +176,6 @@ ipcMain.handle('submitToChatGPT', async (e, text: string) => {
           const data = payload.replaceAll(/(\n)?^data:\s*/g, ''); // in case there's multiline data event
           try {
             const delta = JSON.parse(data.trim());
-            console.log(delta.choices[0].delta?.content);
 
             if (delta.choices[0].delta?.content) {
               mainWindow?.webContents.send(
@@ -185,7 +185,7 @@ ipcMain.handle('submitToChatGPT', async (e, text: string) => {
               botMessage += delta.choices[0].delta?.content;
             }
           } catch (error) {
-            console.log(`Error with JSON.parse and ${payload}.\n${error}`);
+            Logger.log(`Error with JSON.parse and ${payload}.\n${error}`);
           }
         }
       }
@@ -193,7 +193,7 @@ ipcMain.handle('submitToChatGPT', async (e, text: string) => {
 
     /* On Stream end store message for history */
     stream.on('end', async () => {
-      console.log('Stream done', botMessage);
+      Logger.log('Stream done', botMessage);
       const responseEmbeddings = await createEmbeddings(botMessage);
       await pineconeDB.insertVector(
         responseEmbeddings.embedding,
@@ -276,9 +276,7 @@ const addTrayMenu = (win: BrowserWindow) => {
 const registerKeyboardShortcuts = (win: BrowserWindow) => {
   // Register a 'CommandOrControl+G' shortcut listener.
   const registerToggle = globalShortcut.register('CommandOrControl+G', () => {
-    console.log('CommandOrControl+G is pressed');
     const isFocused = win.isFocused();
-    console.log('isFocused', isFocused);
     if (isFocused) {
       win.hide();
     } else {
@@ -358,11 +356,10 @@ const createWindow = async () => {
     mainWindow = null;
   });
 
-  // mainWindow.on('minimize', (event) => {
-  //   debugger;
-  //   // event.preventDefault();
-  //   mainWindow?.hide();
-  // });
+  mainWindow.on('minimize', () => {
+    // event.preventDefault();
+    mainWindow?.hide();
+  });
 
   mainWindow.on('close', (event) => {
     if (!application.isQuiting) {
