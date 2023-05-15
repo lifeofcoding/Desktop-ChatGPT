@@ -38,7 +38,7 @@ const agent = async (text: string): AgentResponse => {
       { "search": "weather New York" }
 
       User query: Who won the Lakers game last night?
-      { "search": "Lakers game last night" }
+      { "search": "who won the Lakers game last night" }
 
       User query: What is the best way to make a pizza?
       { "search": "best way to make a pizza" }
@@ -57,6 +57,27 @@ const agent = async (text: string): AgentResponse => {
 
       User query: Can you explain further?
       { "text": "Can you explain further?" }
+
+      User query: What is the new Talyor Swift album called?
+      { "search": "What is the new Talyor Swift album called?" }
+
+      User query: What does that mean?
+      { "text": "What does that mean?" }
+
+      User query: How tall is that building?
+      { "text": "How tall is that building?" }
+
+      User query: What is the tallest building in the world?
+      { "search": "What is the tallest building in the world?" }
+
+      User query: Best chicken recipe?
+      { "search": "Best chicken recipe?" }
+
+      User query: Best resturant in Jacksonville, Florida?
+      { "search": "Best resturant in Jacksonville, Florida?" }
+
+      User query: Generate a random number between 1 and 100.
+      { "text": "Generate a random number between 1 and 100." }
 
       User query: ${text}
     `,
