@@ -47,10 +47,16 @@ const agent = async (text: string): AgentResponse => {
       { "text": "Explain physics to me in simple terms." }
 
       User query: Who was the first president of the United States?
-      { "text": "Who was the first president of the United States?" }
+      { "search": "Who was the first president of the United States?" }
 
       User query: What happened to the dinosaurs?
       { "text": "What happened to the dinosaurs?" }
+
+      User query: Write a poem about the ocean.
+      { "text": "Write a poem about the ocean." }
+
+      User query: What are the Coldplay tour dates?
+      { "search": "Coldplay tour dates" }
 
       User query: What date does Taylor Swift's new album come out?
       { "search": "What date does Taylor Swift's new album come out?" }
