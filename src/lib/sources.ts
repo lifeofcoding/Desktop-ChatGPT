@@ -1,6 +1,7 @@
 import * as cheerio from 'cheerio';
 import { Readability } from '@mozilla/readability';
 import { JSDOM } from 'jsdom';
+import { agent } from './openai';
 
 // Inspired by https://github.com/mckaywrigley/clarity-ai/blob/5a33db140d253f47da3f07ad1475938c14dfda45/pages/api/sources.ts
 
@@ -20,11 +21,18 @@ const cleanSourceText = (text: string) => {
 };
 
 const getSources = async (query: string, sourceCount = 4) => {
-  if (query.split(' ').length < 2) {
+  const agentResponse = await agent(query);
+
+  if (agentResponse.text || !agentResponse.search) {
     return [];
   }
+
+  const searchQuery = agentResponse.search;
+
   // GET LINKS
-  const response = await fetch(`https://www.google.com/search?q=${query}`);
+  const response = await fetch(
+    `https://www.google.com/search?q=${searchQuery}`
+  );
   const html = await response.text();
   const $ = cheerio.load(html);
   const linkTags = $('a');
