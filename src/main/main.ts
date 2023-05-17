@@ -325,7 +325,7 @@ const createWindow = async () => {
 
   mainWindow = new BrowserWindow({
     width: 800,
-    height: 445,
+    height: 460,
     frame: false,
     transparent: true,
     show: false,
