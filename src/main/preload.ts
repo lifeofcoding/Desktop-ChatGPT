@@ -32,6 +32,9 @@ const electronHandler = {
       // ipcRenderer.on("submitToChatGPT", (event, customData) => cb(customData));
       return ipcRenderer.invoke('submitToChatGPT', question);
     },
+    updateHeight: (y: number) => {
+      ipcRenderer.invoke('updateHeight', y);
+    },
     minimize: () => {
       ipcRenderer.invoke('minimize');
     },

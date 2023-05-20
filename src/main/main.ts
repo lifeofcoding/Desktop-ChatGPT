@@ -148,7 +148,7 @@ ipcMain.handle('submitToChatGPT', async (e, text: string) => {
       : modifiedMessages[modifiedMessages.length - 1];
 
     if (isDebug) {
-      console.log('messages: ', modifiedMessages);
+      console.log('messages: ', modifiedMessages, sources);
     }
 
     const completion = await openai.createChatCompletion(
@@ -229,6 +229,19 @@ ipcMain.handle('submitToChatGPT', async (e, text: string) => {
 
 ipcMain.handle('minimize', async () => {
   BrowserWindow.getFocusedWindow()?.minimize();
+});
+
+ipcMain.handle('updateHeight', async (e, y: number) => {
+  // const adjustedHeight = y + (y < 320 ? 200 : 100);
+  const adjustedHeight = y + (y < 300 ? 200 : 100);
+  if (isDebug) {
+    console.log('updateHeight: ', y, adjustedHeight);
+  }
+  const currentWindow = BrowserWindow.getFocusedWindow();
+
+  currentWindow?.setResizable(true);
+  currentWindow?.setSize(800, adjustedHeight, false);
+  currentWindow?.setResizable(false);
 });
 
 const RESOURCES_PATH = app.isPackaged
@@ -372,7 +385,9 @@ const createWindow = async () => {
 
   mainWindow.on('blur', () => {
     mainWindow?.hide();
-    console.log('sending blur event');
+    if (isDebug) {
+      console.log('sending blur event');
+    }
     mainWindow?.webContents.send('blur');
   });
 

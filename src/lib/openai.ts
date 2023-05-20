@@ -58,6 +58,18 @@ const agent = async (text: string): AgentResponse => {
       User query: What are the Coldplay tour dates?
       { "search": "Coldplay tour dates" }
 
+      User query: Who won the Super Bowl in 2020?
+      { "search": "Who won the Super Bowl in 2020?" }
+
+      User query: How to replace the oil in my Ford focus? Explain to me like a child.
+      { "search": "How to replace the oil in my Ford focus?" }
+
+      User query: Who is the best basketball player of all time? Answer in short form sentences.
+      { "search": "Who is the best basketball player of all time?" }
+
+      User query: How do I replace my alternator? Explain in simple terms.
+      { "search": "How do I replace my alternator?" }
+
       User query: What date does Taylor Swift's new album come out?
       { "search": "What date does Taylor Swift's new album come out?" }
 
@@ -73,11 +85,23 @@ const agent = async (text: string): AgentResponse => {
       User query: How tall is that building?
       { "text": "How tall is that building?" }
 
+      User query: What won the Oscar for best picture in 2020?
+      { "search": "What won the Oscar for best picture in 2020?" }
+
+      User query: I missed that, can you repeat it?
+      { "text": "I missed that, can you repeat it?" }
+
+      User query: I am a programmer and I need to know the best method for SSO.
+      { "search": "best method for SSO" }
+
       User query: What is the tallest building in the world?
       { "search": "What is the tallest building in the world?" }
 
       User query: Best chicken recipe?
       { "search": "Best chicken recipe?" }
+
+      User query: I am a laywer and I need to know about the verdict of case number 1:21-cv-22437-BB.
+      { "search": "verdict of case number 1:21-cv-22437-BB" }
 
       User query: Can you elaborate?
       { "text": "Can you elaborate?" }

@@ -24,6 +24,8 @@ const cleanSourceText = (text: string) => {
 const getSources = async (query: string, sourceCount = 4) => {
   const agentResponse = await agent(query);
 
+  Logger.log('agentResponse', agentResponse);
+
   if (agentResponse.text || !agentResponse.search) {
     return [];
   }
@@ -82,14 +84,19 @@ const getSources = async (query: string, sourceCount = 4) => {
     const sourceResponse = await fetch(link, { signal: controller.signal });
     clearTimeout(id);
     const sourceHtml = await sourceResponse.text();
-    const dom = new JSDOM(sourceHtml);
-    const doc = dom.window.document;
-    const parsed = new Readability(doc).parse();
 
-    if (parsed) {
-      const sourceText = cleanSourceText(parsed.textContent);
+    try {
+      const dom = new JSDOM(sourceHtml);
+      const doc = dom.window.document;
+      const parsed = new Readability(doc).parse();
 
-      return { url: link, text: sourceText };
+      if (parsed) {
+        const sourceText = cleanSourceText(parsed.textContent);
+
+        return { url: link, text: sourceText };
+      }
+    } catch (e) {
+      Logger.log('Failed parsing:', link);
     }
 
     return undefined;

@@ -5,7 +5,15 @@
 html,
 body {
   height: 100%;
-  @apply rounded-sm  h-full w-full flex items-center justify-center;
+  @apply rounded-sm  h-full w-full flex justify-center;
+}
+
+/* ::-webkit-scrollbar {
+  display: none;
+} */
+
+body {
+  @apply pt-10;
 }
 
 @layer components {
